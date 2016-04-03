@@ -152,8 +152,11 @@ public class HttpRequestResponse {
         String[] response = new String(httpResponse).split("\r\n\r\n");
 
         // size
-        int size = response[1].getBytes().length;
-
+        int size = 0;
+        if (response.length > 1) {
+            size = response[1].getBytes().length;
+        }
+        
         // mimeType
         String mimeType = getMimeType(httpResponse);
 

@@ -24,7 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class BurpExtender implements IBurpExtender, IContextMenuFactory {
 
     private final static String EXTENDER_NAME = "OgaHarSave";
-    private final static String EXTENDER_VERSION = "0.9.1";
+    private final static String EXTENDER_VERSION = "0.9.2";
     private final static String Har_VERSION = "1.2";
     private IBurpExtenderCallbacks callbacks;
     private IExtensionHelpers helpers;
