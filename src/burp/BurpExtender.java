@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class BurpExtender implements IBurpExtender, IContextMenuFactory {
 
     private final static String EXTENDER_NAME = "OgaHarSave";
-    private final static String EXTENDER_VERSION = "0.9";
+    private final static String EXTENDER_VERSION = "0.9.1";
     private final static String Har_VERSION = "1.2";
     private IBurpExtenderCallbacks callbacks;
     private IExtensionHelpers helpers;
@@ -38,7 +39,7 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory {
         callbacks.registerContextMenuFactory(this);
         burpStdout = new PrintWriter(callbacks.getStdout(), true);
         burpStderr = new PrintWriter(callbacks.getStderr(), true);
-        burpStdout.println(EXTENDER_NAME + " v" +EXTENDER_VERSION + " Load OK!");
+        burpStdout.println(EXTENDER_NAME + " v" + EXTENDER_VERSION + " Load OK!");
     }
 
     @Override
@@ -108,7 +109,7 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory {
                         .httpVersion(HttpRequestResponse.getResponseVersion(burpHttpResponse))
                         .cookies(HttpRequestResponse.createResponseCookieList(helpers, requestResponse))
                         .headers(HttpRequestResponse.createHeadersList(burpHttpResponse))
-                        .content(HttpRequestResponse.createContent(burpHttpResponse))
+                        .content(HttpRequestResponse.createContent(helpers, burpHttpResponse))
                         .redirectURL(HttpRequestResponse.getRedirectURL(burpHttpResponse))
                         .headersSize(HttpRequestResponse.getHeaderSize(burpHttpResponse))
                         .bodySize(HttpRequestResponse.getBodySize(burpHttpResponse)).build();
@@ -147,13 +148,21 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory {
 
     private String getJsonString(Object targetObject) {
         ObjectMapper mapper = new ObjectMapper();
-        String json = "";
+        byte[] jsonbyte = null;
         try {
-            json = mapper.writeValueAsString(targetObject);
+            jsonbyte = mapper.writeValueAsBytes(targetObject);
         } catch (JsonProcessingException e) {
             burpStderr.println(e);
         }
-        return json;
+
+        String retString = "";
+        try {
+            retString = new String(jsonbyte, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            burpStderr.println(e);
+        }
+
+        return retString;
     }
 
     private void saveToFile(String saveStr) {

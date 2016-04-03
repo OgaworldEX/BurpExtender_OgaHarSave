@@ -2,6 +2,8 @@ package utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 import java.util.List;
 
 import burp.*;
@@ -146,21 +148,29 @@ public class HttpRequestResponse {
         return requestLineArray[0];
     }
 
-    public static Content createContent(byte[] httpResponse) {
+    public static Content createContent(IExtensionHelpers helpers, byte[] httpResponse) {
         String[] response = new String(httpResponse).split("\r\n\r\n");
 
         // size
-        int size = response[0].getBytes().length;
+        int size = response[1].getBytes().length;
 
         // mimeType
         String mimeType = getMimeType(httpResponse);
 
-        String text = "";
+        
+        String base64String = "";
         if (response.length > 1) {
-            text = response[1];
+            IResponseInfo iResInfo =  helpers.analyzeResponse(httpResponse);
+            int bodyPos = iResInfo.getBodyOffset();
+            byte[] bodybyte = Arrays.copyOfRange(httpResponse,bodyPos,httpResponse.length);
+            
+            Encoder encoder = Base64.getMimeEncoder();
+            encoder = Base64.getMimeEncoder();
+            base64String = encoder.encodeToString(bodybyte);
         }
 
-        Content retContent = new Content.Builder().size(size).compression(0).mimeType(mimeType).text(text).build();
+        Content retContent = new Content.Builder().size(size).compression(0).encoding("base64").mimeType(mimeType)
+                .text(base64String).build();
 
         return retContent;
     }
